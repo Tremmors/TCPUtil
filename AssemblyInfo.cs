@@ -9,7 +9,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyTitle("TCPUtil")]
 [assembly: AssemblyDescription("A quick TCP Diagnostic utility")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ordog Briste")]
+[assembly: AssemblyCompany("John Trimis")]
 [assembly: AssemblyProduct("TCPUtil")]
 [assembly: AssemblyCopyright("2009")]
 [assembly: AssemblyTrademark("")]

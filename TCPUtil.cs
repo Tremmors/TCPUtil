@@ -2,44 +2,51 @@ using System;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
-using System.Threading;
 using System.Collections;
 using System.Collections.Generic;
 
 namespace TCPUtil
-{   //<NameSpace-TCPUtil>
+{   // NameSpace : TCPUtil
+
 	/// <summary>
-	/// An asynchronous socket server and client.
+	///     An asynchronous socket server and client.
 	/// </summary>
 	public class TCPUtil : System.Windows.Forms.Form
-    {   //<CLASS-TCPUtil>
-		private System.Windows.Forms.Label lblPort;
-        private System.Windows.Forms.Label lblHost;
-
-		private System.Windows.Forms.Button btnDisconnect;
-		private System.Windows.Forms.Button btnConnect;
-        private System.Windows.Forms.Button btnBind;
-        private System.Windows.Forms.Button btnSend;
-
-        private System.Windows.Forms.TextBox txtIP;
-		private System.Windows.Forms.TextBox txtPort;
-        private System.Windows.Forms.ListBox lstConnections;
-
-        private System.Windows.Forms.CheckBox chkSendRaw;
-
-        private System.Windows.Forms.RichTextBox richTextRxMessage;
-		private System.Windows.Forms.Button btnRXClear;
-        private System.Windows.Forms.Button btnSaveToDisk;
+    {   // CLASS : TCPUtil
         
 		/// <summary>
-		/// The main callback for Worker Sockets
+		///     The main callback for Worker Sockets
 		/// </summary>
 		public AsyncCallback WorkerCallBack;
 
         /// <summary>
-        /// The main collection of sockets that actually do things
+        ///     The main collection of sockets that actually do things
         /// </summary>
         private List<Socket> WorkerSockets = new List<Socket>();
+
+        
+		private Queue OutgoingData;
+		
+		public TCPUtil()
+		{   // CONSTRUCTOR
+
+			//
+			// The InitializeComponent() call is required for Windows Forms designer support.
+			//
+			InitializeComponent();
+			OutgoingData = new Queue();
+
+        }   // CONSTRUCTOR
+
+        #region Windows Forms Designer generated code
+        [STAThread]
+		public static void Main(string[] args)
+		{   // Main
+
+			Application.Run(new TCPUtil());
+
+		}   // Main
+
         private ContextMenuStrip mnuTX;
         private System.ComponentModel.IContainer components;
         private ToolStripMenuItem mnuTXSelectAll;
@@ -47,27 +54,22 @@ namespace TCPUtil
         private ToolStripMenuItem mnuTxPaste;
         private ToolStripSeparator toolStripSeparator1;
         private ToolStripMenuItem mnuTxSendAllSelected;
-        private CheckBox chkShortCuts;
         private TextBox txtTXMessage;
         private SplitContainer splitContainer1;
-        
-		private Queue OutgoingData;
-		
-		public TCPUtil()
-		{   //<CONSTRUCTOR>
-			//
-			// The InitializeComponent() call is required for Windows Forms designer support.
-			//
-			InitializeComponent();
-			OutgoingData = new Queue();
-        }   //</CONSTRUCTOR>
-        #region Windows Forms Designer generated code
-        [STAThread]
-		public static void Main(string[] args)
-		{
-			Application.Run(new TCPUtil());
-		}
-		
+        private System.Windows.Forms.Label lblPort;
+        private System.Windows.Forms.Label lblHost;
+        private System.Windows.Forms.Button btnDisconnect;
+        private System.Windows.Forms.Button btnConnect;
+        private System.Windows.Forms.Button btnBind;
+        private System.Windows.Forms.Button btnSend;
+        private System.Windows.Forms.TextBox txtIP;
+        private System.Windows.Forms.TextBox txtPort;
+        private System.Windows.Forms.ListBox lstConnections;
+        private System.Windows.Forms.RichTextBox richTextRxMessage;
+        private System.Windows.Forms.Button btnRXClear;
+        private System.Windows.Forms.Button btnSaveToDisk;
+        private System.Windows.Forms.SaveFileDialog dlgSave;
+
 		
 		/// <summary>
 		/// This method is required for Windows Forms designer support.
@@ -93,10 +95,8 @@ namespace TCPUtil
             this.lblPort = new System.Windows.Forms.Label();
             this.btnBind = new System.Windows.Forms.Button();
             this.btnRXClear = new System.Windows.Forms.Button();
-            this.chkSendRaw = new System.Windows.Forms.CheckBox();
             this.btnSaveToDisk = new System.Windows.Forms.Button();
             this.lstConnections = new System.Windows.Forms.ListBox();
-            this.chkShortCuts = new System.Windows.Forms.CheckBox();
             this.txtTXMessage = new System.Windows.Forms.TextBox();
             this.splitContainer1 = new System.Windows.Forms.SplitContainer();
             this.mnuTX.SuspendLayout();
@@ -166,6 +166,7 @@ namespace TCPUtil
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.richTextRxMessage.BackColor = System.Drawing.SystemColors.InactiveCaptionText;
+            this.richTextRxMessage.ForeColor = System.Drawing.SystemColors.Menu;
             this.richTextRxMessage.Location = new System.Drawing.Point(3, 0);
             this.richTextRxMessage.MinimumSize = new System.Drawing.Size(200, 200);
             this.richTextRxMessage.Name = "richTextRxMessage";
@@ -253,15 +254,6 @@ namespace TCPUtil
             this.btnRXClear.Text = "Clear";
             this.btnRXClear.Click += new System.EventHandler(this.btnRXClear_Click);
             // 
-            // chkSendRaw
-            // 
-            this.chkSendRaw.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkSendRaw.Location = new System.Drawing.Point(694, 487);
-            this.chkSendRaw.Name = "chkSendRaw";
-            this.chkSendRaw.Size = new System.Drawing.Size(87, 24);
-            this.chkSendRaw.TabIndex = 19;
-            this.chkSendRaw.Text = "Send Raw";
-            // 
             // btnSaveToDisk
             // 
             this.btnSaveToDisk.Location = new System.Drawing.Point(621, 2);
@@ -281,15 +273,6 @@ namespace TCPUtil
             this.lstConnections.SelectionMode = System.Windows.Forms.SelectionMode.None;
             this.lstConnections.Size = new System.Drawing.Size(684, 69);
             this.lstConnections.TabIndex = 21;
-            // 
-            // chkShortCuts
-            // 
-            this.chkShortCuts.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.chkShortCuts.Location = new System.Drawing.Point(694, 466);
-            this.chkShortCuts.Name = "chkShortCuts";
-            this.chkShortCuts.Size = new System.Drawing.Size(87, 24);
-            this.chkShortCuts.TabIndex = 22;
-            this.chkShortCuts.Text = "Short Cuts";
             // 
             // txtTXMessage
             // 
@@ -339,8 +322,6 @@ namespace TCPUtil
             this.Controls.Add(this.lblHost);
             this.Controls.Add(this.txtIP);
             this.Controls.Add(this.btnSend);
-            this.Controls.Add(this.chkSendRaw);
-            this.Controls.Add(this.chkShortCuts);
             this.Controls.Add(this.splitContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MinimumSize = new System.Drawing.Size(800, 550);
@@ -362,462 +343,582 @@ namespace TCPUtil
         ///     Send everything in the buffer out to all connected sockets.
         /// </summary>
         void SendBuffer()
-        {
+        {   // METHOD : SendBuffer
+
             byte[] buffer = GetBytes();
-            foreach (Socket thisSocket in this.WorkerSockets)
-            {   //<StepThroughAllSockets>
-                if (thisSocket != null)
-                {   //<SocketCreated>
-                    if (thisSocket.Connected)
-                    {   //<SocketConnected>
+            foreach ( Socket thisSocket in this.WorkerSockets )
+            {   // Step through all sockets
+
+                if ( thisSocket != null )
+                {   // SocketCreated
+
+                    if ( thisSocket.Connected )
+                    {   // Socket connected
+
                         try
-                        {
-                            thisSocket.Send(buffer, 0, buffer.Length, SocketFlags.None);
-                        }
+                        {   // TRY
+
+                            thisSocket.Send( buffer, 0, buffer.Length, SocketFlags.None );
+
+                        }   // TRY
                         catch
-                        {
+                        {   // CATCH
+
                             thisSocket.Close();
                             UpdateControls();
-                        }
-                    }   //</SocketConnected>
-                }   //</SocketCreated>
-            }   //</StepThroughAllSockets>
 
-        }
+                        }   // CATCH
+
+                    }   // Socket connected
+
+                }   // Socket created
+
+            }   // StepThrough all sockets
+
+        }   // METHOD : SendBuffer
 
         /// <summary>
-        /// Get the byte[] to send down the socket.  Fixes any special chars
+        ///     Get the byte[] to send down the socket.  Fixes any special chars
         /// </summary>
-        /// <returns></returns>
-        private byte[] FixString(string strMsg)
-        {   //<GetAndFixString>
-            if (this.chkSendRaw.Checked)
-            {   //<SendRaw>
-                System.Text.Encoding enc = System.Text.Encoding.GetEncoding("ISO-8859-1");
-                return enc.GetBytes(this.txtTXMessage.Text);
-            }   //</SendRaw>
-            else
-            {   //<SendNonPrintables>
+        /// <returns>
+        ///     byte[] ready to be sent
+        /// </returns>
+        private byte[] FixString( string strMsg )
+        {   // METHOD : FixString
 
-                strMsg = strMsg.Replace("\r", "");  //Carriage Returns
-                strMsg = strMsg.Replace("\n", "");  //Line Feeds
-                ///We don't really care about these characters.  They are generic whitespace, 
-                ///if someone wanted a Carriage Returns, they should put a <0D> or a <0A>
+                strMsg = strMsg.Replace( "\r", "" );    // Carriage Returns
+                strMsg = strMsg.Replace( "\n", "" );    // Line Feeds
+                                                        // We don't really care about these characters.
+                                                        // if someone wanted a Carriage Returns, they 
+                                                        // should put a <0D> or a <0A>
 
-                for (int i = 0; i < 256; i++)
-                {   //<StepThroughANSIChars1-256>
-                    //This bit runs through and translates all <XX> chars into their raw binary values.
-                    //(WHERE XX is a hex value less than FF)
-                    string StringVal = i.ToString("X");
-                    string BinVal = Convert.ToString((char)i);
-                    strMsg = strMsg.Replace("<" + StringVal.ToLower() + ">", BinVal);
-                    strMsg = strMsg.Replace("<" + StringVal.ToUpper() + ">", BinVal);
-                    if (StringVal.Length == 1)
-                    {   //<SingleDigitHexValue>
+                for ( int i = 0 ; i < 256 ; i++ )
+                {   // StepThrough Chars 1-256
+
+                    string StringVal = i.ToString( "X" );
+                    string BinVal = Convert.ToString( (char)i );
+                    strMsg = strMsg.Replace( "<" + StringVal.ToLower() + ">", BinVal );
+                    strMsg = strMsg.Replace( "<" + StringVal.ToUpper() + ">", BinVal );
+                    if ( StringVal.Length == 1 )
+                    {   // Single Digit Hex Value
+
                         // We are doing this because we want to detect both <B> and <0B> as they are both valid.
-                        strMsg = strMsg.Replace("<" + "0" + StringVal.ToLower() + ">", BinVal);
-                        strMsg = strMsg.Replace("<" + "0" + StringVal.ToUpper() + ">", BinVal);
-                    }   //</SingleDigitHexValue>
-                }   //</StepThroughANSIChars1-256>
+                        strMsg = strMsg.Replace( "<" + "0" + StringVal.ToLower() + ">", BinVal );
 
-                if (this.chkShortCuts.Checked)
-                {   //<TranslateShortCuts>
+                    }   // Single Digit Hex Value
 
-                    ///This section defines some special character shortcuts, these are the ANSII names
-                    ///for the unprintable characters.  These are probably not right, but its what I know
-                    ///the chars as and is easiest for me.
-                    
-                    strMsg = strMsg.Replace("<NUL>", "\x0");
-                    strMsg = strMsg.Replace("<NULL>", "\x0");
-                    strMsg = strMsg.Replace("<SOH>", "\x1");
-                    strMsg = strMsg.Replace("<STX>", "\x2");
-                    strMsg = strMsg.Replace("<ETX>", "\x3");
-                    strMsg = strMsg.Replace("<EOT>", "\x4");
-                    strMsg = strMsg.Replace("<ENQ>", "\x5");
-                    strMsg = strMsg.Replace("<ACK>", "\x6");
-                    strMsg = strMsg.Replace("<BEL>", "\x7");
-                    strMsg = strMsg.Replace("<BS>", "\x8");
-                    strMsg = strMsg.Replace("<TAB>", "\x9");
-                    strMsg = strMsg.Replace("<LF>", "\xA");
-                    strMsg = strMsg.Replace("<VT>", "\xB");
-                    strMsg = strMsg.Replace("<FF>", "\xC");
-                    strMsg = strMsg.Replace("<CR>", "\xD");
-                    strMsg = strMsg.Replace("<SO>", "\xE");
-                    strMsg = strMsg.Replace("<SI>", "\xF");
-                    strMsg = strMsg.Replace("<DLE>", "\x10");
-                    strMsg = strMsg.Replace("<DC1>", "\x11");
-                    strMsg = strMsg.Replace("<DC2>", "\x12");
-                    strMsg = strMsg.Replace("<DC3>", "\x13");
-                    strMsg = strMsg.Replace("<DC4>", "\x14");
-                    strMsg = strMsg.Replace("<NAK>", "\x15");
-                    strMsg = strMsg.Replace("<SYN>", "\x16");
-                    strMsg = strMsg.Replace("<ETB>", "\x17");
-                    strMsg = strMsg.Replace("<CAN>", "\x18");
-                    strMsg = strMsg.Replace("<EM>", "\x19");
-                    strMsg = strMsg.Replace("<SUB>", "\x1A");
-                    strMsg = strMsg.Replace("<ESC>", "\x1B");
-                    strMsg = strMsg.Replace("<FS>", "\x1C");
-                    strMsg = strMsg.Replace("<GS>", "\x1D");
-                    strMsg = strMsg.Replace("<RS>", "\x1E");
-                    strMsg = strMsg.Replace("<US>", "\x1F");
+                }   // Step Through Chars 1-256
 
-                }   //</TranslateShortCuts>
+                ///This section defines some special character shortcuts, these are the ANSII names
+                ///for the unprintable characters.  These are probably not right, but its what I know
+                ///the chars as and is easiest for me.
+                
+                strMsg = strMsg.Replace( "<NUL>", "\x0" );
+                strMsg = strMsg.Replace( "<NULL>", "\x0" );
+                strMsg = strMsg.Replace( "<SOH>", "\x1" );
+                strMsg = strMsg.Replace( "<STX>", "\x2" );
+                strMsg = strMsg.Replace( "<ETX>", "\x3" );
+                strMsg = strMsg.Replace( "<EOT>", "\x4" );
+                strMsg = strMsg.Replace( "<ENQ>", "\x5" );
+                strMsg = strMsg.Replace( "<ACK>", "\x6" );
+                strMsg = strMsg.Replace( "<BEL>", "\x7");
+                strMsg = strMsg.Replace( "<BS>", "\x8" );
+                strMsg = strMsg.Replace( "<TAB>", "\x9" );
+                strMsg = strMsg.Replace( "<LF>", "\xA" );
+                strMsg = strMsg.Replace( "<VT>", "\xB" );
+                strMsg = strMsg.Replace( "<FF>", "\xC" );
+                strMsg = strMsg.Replace( "<CR>", "\xD" );
+                strMsg = strMsg.Replace( "<SO>", "\xE" );
+                strMsg = strMsg.Replace( "<SI>", "\xF" );
+                strMsg = strMsg.Replace( "<DLE>", "\x10" );
+                strMsg = strMsg.Replace( "<DC1>", "\x11" );
+                strMsg = strMsg.Replace( "<DC2>", "\x12" );
+                strMsg = strMsg.Replace( "<DC3>", "\x13" );
+                strMsg = strMsg.Replace( "<DC4>", "\x14" );
+                strMsg = strMsg.Replace( "<NAK>", "\x15" );
+                strMsg = strMsg.Replace( "<SYN>", "\x16" );
+                strMsg = strMsg.Replace( "<ETB>", "\x17" );
+                strMsg = strMsg.Replace( "<CAN>", "\x18" );
+                strMsg = strMsg.Replace( "<EM>", "\x19" );
+                strMsg = strMsg.Replace( "<SUB>", "\x1A" );
+                strMsg = strMsg.Replace( "<ESC>", "\x1B" );
+                strMsg = strMsg.Replace( "<FS>", "\x1C" );
+                strMsg = strMsg.Replace( "<GS>", "\x1D" );
+                strMsg = strMsg.Replace( "<RS>", "\x1E" );
+                strMsg = strMsg.Replace( "<US>", "\x1F" );
+
 
                 ///Note, we can't use ASCII encoding, because ASCII is a 7 bit encoding and therefor only
                 ///has 128 chars, the chars 128-255 are not in ASCII.  Those chars are in the ANSI character
                 ///set and then into the ISO-8859-1 character set which is backward compatible with ANSI.
-                System.Text.Encoding enc = System.Text.Encoding.GetEncoding("ISO-8859-1");
-                return enc.GetBytes(strMsg);
-            }   //<SendNonPrintables>
-        }   //</GetAndFixString>
+                System.Text.Encoding enc = System.Text.Encoding.GetEncoding( "ISO-8859-1" );
+                return enc.GetBytes( strMsg );
+
+        }   // METHOD : FixString
 
         /// <summary>
-        /// Blank Delegate needed to call UpdateGUI
+        ///     Blank Delegate needed to call UpdateGUI
         /// </summary>
         public delegate void GUIUpdater();
 
         /// <summary>
-        /// Executes on its own thread to update the GUI with the connections and button states
+        ///     Executes on its own thread to update the GUI with the connections and button states
         /// </summary>
         private void UpdateGUI()
-        {   //<UpdateGUI>
+        {   // METHOD : UpdateGUI
+
             btnConnect.Enabled = true;
             btnDisconnect.Enabled = false;
             btnBind.Enabled = true;
-            lock (this.WorkerSockets)
-            {   //<LOCK-WorkerSockets>
+            lock ( this.WorkerSockets )
+            {   // LOCK : WorkerSockets
+
                 this.lstConnections.Items.Clear();
                 bool somethingConnected = false;
-                foreach (Socket thisSocket in this.WorkerSockets)
-                {   //<StepThroughAllSockets>
+                foreach ( Socket thisSocket in this.WorkerSockets )
+                {   // Step Through All Sockets
+
                     string Descriptor = "";
-                    if (thisSocket.IsBound)
-                    {   //<Listening>
+                    if ( thisSocket.IsBound )
+                    {   // Listening
+
                         Descriptor += "Local:" + thisSocket.LocalEndPoint;
                         somethingConnected = true;
-                    }   //</Listening>
-                    if (thisSocket.Connected)
-                    {   //<Connected>
+
+                    }   // Listening
+                    if ( thisSocket.Connected )
+                    {   // Connected
+
                         Descriptor += " - Remote:" + thisSocket.RemoteEndPoint.ToString();
                         somethingConnected = true;
-                    }   //</Connected>
-                    if (Descriptor != "")
-                    {   //<ConnectedAndOrBound>
-                        this.lstConnections.Items.Add(Descriptor);
-                    }   //</ConnectedAndOrBound>
-                }   //</StepThroughAllSockets>
-                if (somethingConnected)
-                {   //<AtLeastOneSocketWasConnected>
+
+                    }   // Connected
+                    if ( Descriptor != "" )
+                    {   // Connected And/Or Bound
+
+                        this.lstConnections.Items.Add( Descriptor );
+
+                    }   // Connected And/Or Bound
+
+                }   // Step Through All Sockets
+
+                if ( somethingConnected )
+                {   // At Least One Socket Was Connected
+
                     btnConnect.Enabled = false;
                     btnBind.Enabled = false;
                     btnDisconnect.Enabled = true;
-                }   //</AtLeastOneSocketWasConnected>
-            }   //</LOCK-WorkerSockets>
-        }   //</UpdateGUI>
+
+                }   // At Least One Socket Was Connected
+
+            }   // LOCK : WorkerSockets
+
+        }   // METHOD : UpdateGUI
 
         /// <summary>
-        /// Update all the GUI Controls (spawns a new thread to do it)
+        ///     Update all the GUI Controls (spawns a new thread to do it)
         /// </summary>
         public void UpdateControls()
-        {   //<UpdateControls>
+        {   // METHOD : UpdateControls
+
             try
-            {   //<TRY>
+            {   // TRY
+
                 CleanupDeadSockets();
-                this.Invoke(new GUIUpdater(UpdateGUI));
-            }   //</TRY>
+                this.Invoke( new GUIUpdater( UpdateGUI ) );
+
+            }   // TRY
             catch { }
-        }   //</UpdateControls>
-        /// <summary>
-        /// Method that actually writes data to the RX text box (executes on its own thread)
-        /// </summary>
-        /// <param name="Message"></param>
-        public void WriteToGUI(string Message)
-        {
-            this.richTextRxMessage.AppendText(Message);
-        }
-        /// <summary>
-        /// Delegate needed to link WriteRX to WriteToGUI
-        /// </summary>
-        /// <param name="Message"></param>
-        public delegate void StringWriter(string Message);
-        /// <summary>
-        /// Writes some content into the RX textbox (spawns a new thread to do this.
-        /// </summary>
-        /// <param name="Message"></param>
-        public void WriteRX(string Message)
-        {   //<WriteRX>
-            try
-            {   //<TRY>
-                this.richTextRxMessage.Invoke(new StringWriter(WriteToGUI), new object[] { Message });
-            }   //</TRY>
-            catch { }
-        }   //</WriteRX>
+
+        }   // METHOD : UpdateControls
 
         /// <summary>
-        ///     Figure out when the User is trying to use a keyboard shortcut (select all or Ctrl+A in this case)
+        ///     Method that actually writes data to the RX text box (executes on its own thread)
         /// </summary>
-        private void txtTXMessage_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.Control)
-            {   //<UserPressedCtrl>
-                if (e.KeyCode == Keys.A)
-                {   //<UserPressedCtrlA>
+        /// <param name="Message">
+        ///     Message to report was received
+        /// </param>
+        public void WriteToGUI( string Message )
+        {   // METHOD : WriteToGUI
+
+            this.richTextRxMessage.AppendText( Message );
+
+        }   // METHOD : WriteToGUI
+
+        /// <summary>
+        ///     Delegate needed to link WriteRX to WriteToGUI
+        /// </summary>
+        /// <param name="Message">
+        ///     string to pass to either WriteRX or WriteToGUI method
+        /// </param>
+        public delegate void StringWriter( string Message );
+
+        /// <summary>
+        ///     Writes some content into the RX textbox (spawns a new thread to do this.
+        /// </summary>
+        /// <param name="Message">
+        ///     string to report as received on the socket
+        /// </param>
+        public void WriteRX( string Message )
+        {   // METHOD : WriteRX
+
+            try
+            {
+                this.richTextRxMessage.Invoke( new StringWriter( WriteToGUI ), new object[] { Message } );
+            }
+            catch { }
+
+        }   // METHOD : WriteRX
+
+        /// <summary>
+        ///     Figure out when the User is trying to use a keyboard shortcut (select all or 
+        ///     Ctrl+A in this case)
+        /// </summary>
+        private void txtTXMessage_KeyDown( object sender, KeyEventArgs e )
+        {   // METHOD : txtTXMessage_KeyDown
+
+            if ( e.Control )
+            {   // User Pressed [Ctrl]
+
+                if ( e.KeyCode == Keys.A )
+                {   // User Pressed [Ctrl] + [A]
+
                     this.txtTXMessage.SelectAll();
-                }   //<UserPressedCtrlA>
-            }   //</UserPressedCtrl>
-        }
+
+                }   // User Pressed [Ctrl] + [A]
+
+            }   // User Pressed [Ctrl]
+
+        }   // METHOD : txtTXMessage_KeyDown
+
         #endregion
         #region Buttons
         /// <summary>
-        /// The Close Button was clicked
+        ///     The Close Button was clicked
         /// </summary>
-        private void BtnClose_Click(object sender, System.EventArgs e)
-        {   //<BtnClose_Click>
+        private void BtnClose_Click( object sender, System.EventArgs e )
+        {   // METHOD : BtnClose_Click
+
             ShutDown();
             Application.Exit();
-        }   //</BtnClose_Click>
 
-        private void BtnConnect_Click(object sender, System.EventArgs e)
-        {   //<BtnConnect_Click>
+        }   // METHOD : BtnClose_Click
+
+        private void BtnConnect_Click( object sender, System.EventArgs e )
+        {   // BtnConnect_Click
+
             // See if we have text on the IP and Port text fields
-            if (txtIP.Text == "" || txtPort.Text == "")
-            {   //<BlankIPOrPort>
-                MessageBox.Show("IP Address and Port Number are required to connect to the Server\n");
+            if ( txtIP.Text == "" || txtPort.Text == "" )
+            {   // Blank IP Or Port
+
+                MessageBox.Show( "IP Address and Port Number are required to connect to the Server\n" );
                 return;
-            }   //</BlankIPOrPort>
+
+            }   // Blank IP Or Port
             try
-            {   //<TRY>
+            {   // TRY
+
                 UInt16 port;
-                if (UInt16.TryParse(txtPort.Text, out port))
-                {   //<ValidPort>
+                if ( UInt16.TryParse( txtPort.Text, out port ) )
+                {   // Valid Port
+
                     IPAddress ip;
-                    if (IPAddress.TryParse(this.txtIP.Text, out ip))
-                    {   //<ValidIPAddress>
-                        // Create the socket instance
-                        Socket thisSock = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-                        // Set the remote IP address
-                        // Create the end point 
-                        IPEndPoint ipEnd = new IPEndPoint(ip, port);
+                    if ( IPAddress.TryParse( this.txtIP.Text, out ip ) )
+                    {   // Valid IP Address
+
+                        Socket thisSock = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                        IPEndPoint ipEnd = new IPEndPoint( ip, port );
                         // Connect to the remote host
-                        thisSock.Connect(ipEnd);
-                        this.WorkerSockets.Add(thisSock);
-                        if (thisSock.Connected)
-                        {   //<ConnectSuccessful>
+                        thisSock.Connect( ipEnd );
+                        this.WorkerSockets.Add( thisSock );
+                        if ( thisSock.Connected )
+                        {   // Connect Successful
+
                             UpdateControls();
-                            //Wait for data asynchronously 
                             WaitForData(thisSock);
-                        }   //</ConnectSuccessful>
-                    }   //</ValidIPAddress>
-                }   //</ValidPort>
-            }   //</TRY>
+
+                        }   // Connect Successful
+
+                    }   // Valid IP Address
+
+                }   // Valid Port
+
+            }   // TRY
             catch (SocketException se)
-            {   //<CATCH>
-                string str;
-                str = "\nConnection failed, is the server running?\n" + se.Message;
-                MessageBox.Show(str);
+            {   // CATCH : Socket Exception
+
+                MessageBox.Show( "\nConnection failed, is the server running?\n" + se.Message );
                 UpdateControls();
                 ShutDown();
-            }   //</CATCH>
-        }   //</BtnConnect_Click>
+
+            }   // CATCH : Socket Exception
+
+        }   // METHOD : BtnConnect_Click
 
         /// <summary>
-        /// The Send Button was clicked
+        ///     The Send Button was clicked
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void BtnSend_Click(object sender, System.EventArgs e)
-        {   //<BtnSend_Click>
+        {   // METHOD : BtnSend_Click
+
             try
-            {   //<TRY>
-                Send(FixString(this.txtTXMessage.Text));
+            {   // TRY
+
+                Send( FixString( this.txtTXMessage.Text ) );
                 SendBuffer();
-            }   //</TRY>
+
+            }   // TRY
             catch
-            {   //<CATCH>
-                UpdateControls();
-                //ShutDown();
-
-            }   //</CATCH>
-            finally
             {
-                UpdateControls();
             }
-        }   //</BtnSend_Click>
+            finally
+            {   // FINALLY
 
+                UpdateControls();
 
+            }   // FINALLY
+
+        }   // METHOD : BtnSend_Click
+
+        /// <summary>
+        ///     The Disconnect button was clicked
+        /// </summary>
         void BtnDisconnect_Click(object sender, System.EventArgs e)
-        {
-            ShutDown();
-        }
+        {   // METHOD : BtnDisconnect_Click
 
-        private void btnBind_Click(object sender, System.EventArgs e)
-        {   //<btnBind_Click>
+            ShutDown();
+
+        }   // METHOD : BtnDisconnect_Click
+
+        /// <summary>
+        ///     The Bind button was clicked
+        /// </summary>
+        private void btnBind_Click( object sender, System.EventArgs e )
+        {   // METHOD : btnBind_Click
+
             try
-            {   //<TRY>
+            {   // TRY
+
                 // Check the port value
                 UInt16 port;
-                if (UInt16.TryParse(txtPort.Text, out port))
-                {   //<ValidPort>
-                    Socket MainSocket = new Socket(AddressFamily.InterNetwork,
-                        SocketType.Stream,
-                        ProtocolType.Tcp);
-                    IPEndPoint ipLocal = new IPEndPoint(IPAddress.Any, port);
-                    // Bind to local IP Address...
-                    MainSocket.Bind(ipLocal);
-                    // Start listening...
-                    MainSocket.Listen(4);
-                    // Create the call back for any client connections...
-                    MainSocket.BeginAccept(new AsyncCallback(OnClientConnect), MainSocket); ///This will go on listening until someone tries to connect, then 
-                    ///the OnClientConnect callback will fire and we can deal with it
-                    ///there.  We are passing in this socket object as the state object.
-                    ///This will allow us to keep track of this particular socket so 
-                    ///we only try to accept connections on the one socket we are bound
-                    ///to.
-                    this.WorkerSockets.Add(MainSocket);
+                if ( UInt16.TryParse( txtPort.Text, out port ) )
+                {   // Valid Port
+
+                    Socket MainSocket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                    IPEndPoint ipLocal = new IPEndPoint( IPAddress.Any, port );
+                    
+                    MainSocket.Bind( ipLocal );
+                    MainSocket.Listen( 4 );
+                    MainSocket.BeginAccept( new AsyncCallback( OnClientConnect ), MainSocket ); // This will go on listening until someone tries 
+                                                                                                // to connect, then the OnClientConnect callback 
+                                                                                                // will fire and we can deal with it there.  We 
+                                                                                                // are passing in this socket object as the state 
+                                                                                                // object.  This will allow us to keep track of 
+                                                                                                // this particular socket so we only try to accept 
+                                                                                                // connections on the one socket we are bound to.
+                    this.WorkerSockets.Add( MainSocket );
                     UpdateControls();
 
-                }   //</ValidPort>
+                }   // Valid Port
                 else
-                {   //<InvalidPort>
-                    MessageBox.Show("Please enter a Port Number");
+                {   // Invalid Port
+
+                    MessageBox.Show( "Please enter a Port Number" );
                     return;
-                }   //</InvalidPort>
-            }   //</TRY>
+
+                }   // Invalid Port
+
+            }   // TRY
             catch
-            {   //<CATCH>
+            {   // CATCH
+
                 UpdateControls();
                 ShutDown();
-            }   //</CATCH>
-        }   //</btnBind_Click>
+
+            }   // CATCH
+
+        }   // METHOD : btnBind_Click
 
         /// <summary>
-        /// Save Dialog for getting the filename to save the RX box as.
+        ///     Save button was clicked
         /// </summary>
-        System.Windows.Forms.SaveFileDialog dlgSave;
-        private void btnSaveToDisk_Click(object sender, System.EventArgs e)
-        {   //<btnSaveToDisk_Click>
+        private void btnSaveToDisk_Click( object sender, System.EventArgs e )
+        {   // METHOD : btnSaveToDisk_Click
+
             dlgSave = new SaveFileDialog();
             dlgSave.ShowDialog();
-            dlgSave.FileOk += new System.ComponentModel.CancelEventHandler(dlgSave_FileOk);
-        }   //</btnSaveToDisk_Click>
+            dlgSave.FileOk += new System.ComponentModel.CancelEventHandler( dlgSave_FileOk );
 
-        void dlgSave_FileOk(object sender, System.ComponentModel.CancelEventArgs e)
-        {   //<dlgSave_FileOk>
+        }   // METHOD : btnSaveToDisk_Click
+
+        /// <summary>
+        ///     The OK button was clicked on the "Save File As" dialog
+        /// </summary>
+        void dlgSave_FileOk( object sender, System.ComponentModel.CancelEventArgs e )
+        {   // METHOD : dlgSave_FileOk
+
             System.IO.Stream strmOutput = dlgSave.OpenFile();
-            System.Text.Encoding enc = System.Text.Encoding.GetEncoding("ISO-8859-1");
-            byte[] RawOutput = System.Text.Encoding.ASCII.GetBytes(this.richTextRxMessage.Text);
-            strmOutput.Write(RawOutput, 0, RawOutput.Length);
+            System.Text.Encoding enc = System.Text.Encoding.GetEncoding( "ISO-8859-1" );
+            byte[] RawOutput = System.Text.Encoding.ASCII.GetBytes( this.richTextRxMessage.Text );
+            strmOutput.Write( RawOutput, 0, RawOutput.Length );
             strmOutput.Close();
-        }   //</dlgSave_FileOk>
+
+        }   // METHOD : dlgSave_FileOk
 
         /// <summary>
-        /// Clears all content from the TX Box
+        ///     Clears all content from the TX Box
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnTXClear_Click(object sender, System.EventArgs e)
-        {   //<btnTXClear_Click>
+        private void btnTXClear_Click( object sender, System.EventArgs e )
+        {   // METHOD : btnTXClear_Click
+
             this.txtTXMessage.Clear();
-        }   //</btnTXClear_Click>
+
+        }   // METHOD : btnTXClear_Click
 
         /// <summary>
-        /// Clears all content from the RX Box
+        ///     Clears all content from the RX Box
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnRXClear_Click(object sender, System.EventArgs e)
-        {   //<btnRXClear_Click>
+        private void btnRXClear_Click( object sender, System.EventArgs e )
+        {   // METHOD : btnRXClear_Click
+
             this.richTextRxMessage.Clear();
-        }   //</btnRXClear_Click>
+
+        }   // METHOD : btnRXClear_Click
 
         #endregion
         #region Socket Handling Methods
+
         /// <summary>
-        /// Close all sockets
+        ///     Close all sockets
         /// </summary>
         public void ShutDown()
-        {   //<ShutDown>
-            lock (this.WorkerSockets)
-            {   //<LOCK-WorkerSockets>
-                foreach (Socket thisSocket in this.WorkerSockets)
-                {   //<StepThroughAllSockets>
+        {   // METHOD :  ShutDown
+
+            lock ( this.WorkerSockets )
+            {   // LOCK : WorkerSockets
+
+                foreach ( Socket thisSocket in this.WorkerSockets )
+                {   // Step Through All Sockets
+
                     thisSocket.Close();
-                }   //</StepThroughAllSockets>
-            }   //</LOCK-WorkerSockets>
+
+                }   // Step Through All Sockets
+
+            }   // LOCK : WorkerSockets
             UpdateControls();
-        }   //</ShutDown>
+
+        }   // METHOD : ShutDown
 
         /// <summary>
-        /// Get rid of any sockets that are no longer connected
+        ///     Get rid of any sockets that are no longer connected
         /// </summary>
         public void CleanupDeadSockets()
-        {   //<CleanupDeadSockets>
-            int i = 0;
-            lock (this.WorkerSockets)
-            {   //<LOCK-WorkerSockets>
-                while (i < this.WorkerSockets.Count)
-                {   //<StepThroughSockets>
-                    if (this.WorkerSockets[i] == null)
-                    {   //<NullSocket>
-                        this.WorkerSockets.RemoveAt(i);
-                    }   //</NullSocket>
-                    else
-                    {   //<ValidSocket>
-                        try
-                        {   //<TRY>
-                            if (this.WorkerSockets[i].IsBound || this.WorkerSockets[i].Connected)
-                            {   //<ConnectedSocket>
-                                int k = this.WorkerSockets[i].Available;    ///This really does nothing, but it will cause
-                                                                            ///an exception to get thrown if the socket is
-                                                                            ///not valid.  The exception is handled and the
-                                                                            ///socket is treated just as if the socket were
-                                                                            ///not connected.
-                                i++;
-                            }   //</ConnectedSocket>
-                            else
-                            {   //<DisConnectedSocket>
-                                this.WorkerSockets[i].Close();
-                                this.WorkerSockets.RemoveAt(i);
-                            }   //</DisConnectedSocket>
-                        }   //</TRY>
-                        catch
-                        {   //<CATCH>
-                            this.WorkerSockets[i].Close();
-                            this.WorkerSockets.RemoveAt(i);
-                        }   //</CATCH>
-                    }   //</ValidSocket>
-                }   //</StepThroughSockets>
-            }   //</LOCK-WorkerSockets>
-        }   //</CleanupDeadSockets>
+        {   // METHOD : CleanupDeadSockets
 
+            int i = 0;
+            lock ( this.WorkerSockets )
+            {   // LOCK : WorkerSockets
+
+                while ( i < this.WorkerSockets.Count )
+                {   // Step Through Sockets
+
+                    if ( this.WorkerSockets[i] == null )
+                    {   // Null Socket
+
+                        this.WorkerSockets.RemoveAt( i );
+
+                    }   // Null Socket
+                    else
+                    {   // Valid Socket
+
+                        try
+                        {   // TRY
+
+                            if ( this.WorkerSockets[i].IsBound || this.WorkerSockets[i].Connected )
+                            {   // Connected Socket
+
+                                int k = this.WorkerSockets[i].Available;    // This really does nothing, but it will cause
+                                                                            // an exception to get thrown if the socket is
+                                                                            // not valid.  The exception is handled and the
+                                                                            // socket is treated just as if the socket were
+                                                                            // not connected.
+                                i++;
+
+                            }   // Connected Socket
+                            else
+                            {   // Disconnected Socket
+
+                                this.WorkerSockets[i].Close();
+                                this.WorkerSockets.RemoveAt( i );
+
+                            }   // Disconnected Socket
+                        }   // TRY
+                        catch
+                        {   // CATCH
+
+                            this.WorkerSockets[i].Close();
+                            this.WorkerSockets.RemoveAt( i );
+
+                        }   // CATCH
+
+                    }   // Valid Socket
+
+                }   // Step Through Sockets
+
+            }   // LOCK : WorkerSockets
+
+        }   // METHOD : CleanupDeadSockets
+
+        /// <summary>
+        ///     Databuffer + socket container object.  Used as a state object for the socket
+        /// </summary>
         public class SocketPacket
-        {
+        {   // SocketPacket
+
             public System.Net.Sockets.Socket thisSocket;
-            public byte[] dataBuffer = new byte[1];
-        }
+            public byte[] dataBuffer = new byte[256];
+
+        }   // SocketPacket
 
         #endregion
         #region SocketIO
+
         /// <summary>
-        /// Add One byte to be sent down the sockets
+        ///     Add One byte to the outbound buffer to be sent down the sockets
         /// </summary>
-        /// <param name="Character"></param>
-		protected void Send(byte Character)
-        {   //<AddByte>
-			this.OutgoingData.Enqueue(Character);
-        }   //</AddByte>
-        // Start waiting for data from the client
-        public void WaitForData(System.Net.Sockets.Socket thisSocket)
-        {   //<WaitForData>
+        /// <param name="Character">
+        ///     Send a single Character
+        /// </param>
+		protected void Send( byte Character )
+        {   // METHOD : Send
+			
+            this.OutgoingData.Enqueue( Character );
+
+        }   // METHOD : Send
+
+        /// <summary>
+        ///     Start waiting for data from the client 
+        /// </summary>
+        /// <param name="thisSocket">
+        ///     Socket to wait on
+        /// </param>
+        public void WaitForData( System.Net.Sockets.Socket thisSocket )
+        {   // METHOD : WaitForData
+
             try
-            {   //<TRY>
+            {   // TRY
+
                 if (WorkerCallBack == null)
-                {
+                {   // Callback not created yet
+
                     // Specify the call back function which is to be 
                     // invoked when there is any write activity by the 
                     // connected client
                     WorkerCallBack = new AsyncCallback(OnDataReceived);
-                }
+
+                }   // Callback not created yet
                 SocketPacket theSocPkt = new SocketPacket();
                 theSocPkt.thisSocket = thisSocket;
                 // Start receiving any data written by the connected client
@@ -827,9 +928,11 @@ namespace TCPUtil
                     SocketFlags.None,
                     WorkerCallBack,
                     theSocPkt);
-            }   //</TRY>
-            catch (SocketException se)
-            {   //<CATCH>
+
+            }   // TRY
+            catch (SocketException)
+            {   // CATCH : SocketException
+
                 ///We kill this one socket, that is probably already in the .Connected=false
                 ///state, but just for fun we .Close it here.  Then we call UpdateControls
                 ///which calls CleanUpDeadSockets which will get rid of this.  No error message
@@ -837,166 +940,219 @@ namespace TCPUtil
                 ///at the bottom of the window.
                 thisSocket.Close();
                 this.UpdateControls();
-            }   //</CATCH>
-        }   //</WaitForData>
+
+            }   // CATCH : SocketException
+
+        }   // WaitForData
 
         /// <summary>
-        /// returns a byte[] of all the data queued to be sent down the socket
+        ///     Gets a byte[] of all the data queued to be sent down the socket
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        ///     byte[] containing data to be sent
+        /// </returns>
         protected byte[] GetBytes()
-        {   //<GetBytes>
+        {   // METHOD : GetBytes
+
             byte[] output = new byte[this.OutgoingData.Count];
             int i = 0;
-            while (this.OutgoingData.Count > 0)
-            {   //<StepThroughAllBytes>
+            while ( this.OutgoingData.Count > 0 )
+            {   // Step Through All Bytes
+
                 output[i] = (byte)this.OutgoingData.Dequeue();
                 i++;
-            }   //</StepThroughAllBytes>
+
+            }   // Step Through All Bytes
             return output;
-        }   //</GetBytes>
+
+        }   // METHOD : GetBytes
 
         /// <summary>
-        /// Add a byte[] to be sent down the sockets
+        ///     Add a byte[] to be sent down the sockets
         /// </summary>
-        /// <param name="Sequence"></param>
-		protected void Send(byte[] Sequence)
-        {   //<AddBytes>
-			foreach(byte thisByte in Sequence)
-			{   //<StepThroughAllBytesInArray>
-				Send(thisByte);
-			}   //</StepThroughAllBytesInArray>
-        }   //</AddBytes>
+        /// <param name="Sequence">
+        ///     byte[] to send
+        /// </param>
+		protected void Send( byte[] Sequence )
+        {   // METHOD : Send
+
+			foreach( byte thisByte in Sequence )
+			{   // Step Through All Bytes In Array
+
+				Send( thisByte );
+
+			}   // Step Through All Bytes In Array
+
+        }   // METHOD : Send
 
         /// <summary>
-        /// Async callback that happens every time Data Is received.  In this
-        /// method someplace, the socket.EndReceive is called.  That returns
-        /// the number of bytes we got.  If this fires and that number is 0, 
-        /// then we have been disconnected
+        ///     Async callback that happens every time Data Is received.  In this
+        ///     method someplace, the socket.EndReceive is called.  That returns
+        ///     the number of bytes we got.  If this fires and that number is 0, 
+        ///     then we have been disconnected
         /// </summary>
-        /// <param name="asyn"></param>
-        public void OnDataReceived(IAsyncResult asyn)
-        {   //<OnDataReceived>
+        /// <param name="asyn">
+        ///     IAsyncResult
+        ///     AsyncState object is a SocketPacket object that contains a buffer and the socket
+        /// </param>
+        public void OnDataReceived( IAsyncResult asyn )
+        {   // METHOD : OnDataReceived
+
             try
-            {   //<TRY>
+            {   // TRY
+
                 SocketPacket theSockId = (SocketPacket)asyn.AsyncState;
-                if (theSockId != null)
-                {   //<PacketReceived>
-                    int iRx = theSockId.thisSocket.EndReceive(asyn);
+                if ( theSockId != null )
+                {   // Packet Received
+
+                    int iRx = theSockId.thisSocket.EndReceive( asyn );
                     char[] chars = new char[iRx + 1];
 
-                    System.Text.Encoding enc = System.Text.Encoding.GetEncoding("ISO-8859-1");
-                    enc.GetChars(theSockId.dataBuffer, 0, iRx, chars, 0);
+                    System.Text.Encoding enc = System.Text.Encoding.GetEncoding( "ISO-8859-1" );
+                    enc.GetChars( theSockId.dataBuffer, 0, iRx, chars, 0 );
                     string Endpoint = theSockId.thisSocket.RemoteEndPoint.ToString();
-                    foreach (char thisChar in chars)
-                    {	//<StepThroughChars>
-                        int charcode = (int)thisChar;
-                        if (charcode < 32)
-                        {	//<ControlCharacter>
-                            if (charcode != 0)
-                            {	//<NonNull>
-                                string Message = "<" + charcode.ToString("X") + ">";
-                                WriteRX(Message);
+                    foreach ( char thisChar in chars )
+                    {	// Step Through Chars
 
-                                //this.richTextRxMessage.AppendText("<" + charcode.ToString("X") + ">");
-                                if (charcode == 13)
-                                {	//<CarriageReturn>
-                                    WriteRX(Environment.NewLine);
-                                }	//</CarriageReturn>
-                            }	//</NonNull>
-                        }	//<ControlCharacter>
+                        int charcode = (int)thisChar;
+                        if ( charcode < 32 )
+                        {	// Control Character
+
+                            if ( charcode != 0 )
+                            {	// Non-Null character
+
+                                string Message = "<" + charcode.ToString("X") + ">";
+                                WriteRX( Message );
+
+                                if ( charcode == 13 )
+                                {	// Carriage Return
+
+                                    WriteRX( Environment.NewLine );
+
+                                }	// Carriage Return
+
+                            }	// Non-Null character
+
+                        }	// Control Character
                         else
-                        {	//<PrintableCharacter>
-                            WriteRX(thisChar.ToString());
-                        }	//</PrintableCharacter>
-                    }	//<StepThroughChars>
-                    WaitForData(theSockId.thisSocket);
-                }   //</PacketReceived>
-            }   //</TRY>
-            catch (ObjectDisposedException)
-            {   //<CATCH>
-                //System.Diagnostics.Debugger.Log(0, "1", "\nOnDataReceived: Socket has been closed\n");
-            }   //</CATCH>
+                        {	// Printable Character
+
+                            WriteRX( thisChar.ToString() );
+
+                        }	// Printable Character
+
+                    }	// Step Through Chars
+                    WaitForData( theSockId.thisSocket );
+
+                }   // Packet Received
+
+            }   // TRY
             catch
-            {   //<CATCH>
+            {   // CATCH
+
                 UpdateControls();
-                //ShutDown();
-            }   //</CATCH>
-        }   //</OnDataReceived>
-        public void OnClientConnect(IAsyncResult asyn)
-        {   //<OnClientConnect>
+
+            }   // CATCH
+
+        }   // METHOD : OnDataReceived
+
+        /// <summary>
+        ///     Async callback that gets triggered when we have successfully connecteed
+        ///     out to a server
+        /// </summary>
+        /// <param name="asyn">
+        ///     IAsyncresult object.  
+        ///     AsyncState object is the socket.
+        /// </param>
+        public void OnClientConnect( IAsyncResult asyn )
+        {   // METHOD : OnClientConnect
+
             Socket MainSocket = (Socket)asyn.AsyncState;
             try
-            {   //<TRY>
+            {   // TRY
+
                 // Here we complete/end the BeginAccept() asynchronous call
                 // by calling EndAccept() - which returns the reference to
                 // a new Socket object
-                Socket thisWorker = MainSocket.EndAccept(asyn);
-                lock (this.WorkerSockets)
-                {
-                    WorkerSockets.Add(thisWorker);
-                }
-                // Let the worker Socket do the further processing for the 
-                // just connected client
-                WaitForData(thisWorker);
-                MainSocket.BeginAccept(new AsyncCallback(OnClientConnect), MainSocket);
-            }   //</TRY>
-            catch (ObjectDisposedException)
-            {   //<CATCH>
-                //System.Diagnostics.Debugger.Log(0, "1", "\n OnClientConnection: Socket has been closed\n");
+                Socket thisWorker = MainSocket.EndAccept( asyn );
+                lock ( this.WorkerSockets )
+                {   // LOCK : WorkerSockets
 
-            }   //</CATCH>
+                    WorkerSockets.Add( thisWorker );
+
+                }   // LOCK : WorkerSockets
+                WaitForData( thisWorker );
+                MainSocket.BeginAccept( new AsyncCallback( OnClientConnect ), MainSocket );
+
+            }   // TRY
             catch 
-            {   //<CATCH>
-                //MessageBox.Show(se.Message);
+            {   // CATCH
+
                 ShutDown();
-            }   //</CATCH>
+
+            }   // CATCH
             finally
-            {   //<FINALLY>
+            {   // FINALLY
 
                 UpdateControls();
-            }   //</FINALLY>
-        }   //</OnClientConnect>
+
+            }   // FINALLY
+
+        }   // METHOD : OnClientConnect
 
         #endregion
         #region Menu
-        private void mnuTXSelectAll_Click(object sender, EventArgs e)
-        {
+
+        /// <summary>
+        ///     Select everything in the TX Message box
+        /// </summary>
+        private void mnuTXSelectAll_Click( object sender, EventArgs e )
+        {   // METHOD : mnuTXSelectAll_Click
+
             this.txtTXMessage.SelectAll();
-        }   
+
+        }   // METHOD : mnuTXSelectAll_Click
         
         /// <summary>
         ///     Grab whatever is selected in the TX (to be sent)
         /// </summary>
         private void mnuTXCopy_Click(object sender, EventArgs e)
-        {
+        {   // METHOD : mnuTXCopy_Click
+
             Clipboard.SetText(this.txtTXMessage.SelectedText);
-        }
+
+        }   // METHOD : mnuTXCopy_Click
 
         /// <summary>
         ///     Put whatever is in the windows clipboard into the Tx Textbox
         /// </summary>
         private void mnuTxPaste_Click(object sender, EventArgs e)
-        {
+        {   // METHOD : mnuTxPaste_Click
+
             this.txtTXMessage.Paste();
-        }
+
+        }   // METHOD : mnuTxPaste_Click
 
         /// <summary>
         ///     Send only what is selected in the send box. 
         ///     If nothing is selected, send nothing.
         /// </summary>
         private void mnuTxSendAllSelected_Click(object sender, EventArgs e)
-        {
+        {   // METHOD : mnuTxSendAllSelected_Click
+
             string Selection = this.txtTXMessage.SelectedText;
             if (!string.IsNullOrEmpty(Selection))
-            {   //<SomethingSelected>
+            {   // Something Selected
+
                 Send(FixString(Selection));
                 SendBuffer();
-            }   //</SomethingSelected>
-        }
+
+            }   // Something Selected
+
+        }   // METHOD : mnuTxSendAllSelected_Click
+
         #endregion
 
+    }   // CLASS : TCPUtil
 
-
-    }   //</CLASS-TCPUtil>
-}   //</NameSpace-TCPUtil>
+}   // NameSpace : TCPUtil
