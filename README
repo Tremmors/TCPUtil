@@ -1,0 +1,13 @@
+TCPUtil by John Trimis
+
+This is a simple TCP I/O utility I made because:
+1) I need something a little more sophisticated than telnet.
+2) I needed to learn async socket programming.
+
+This started out as some demo code from TheCodeProject.com but has been almost completely rewritten.
+
+You can send text and/or binary values by typing them into the left pane.
+Binary values need to take the format of <XX> where XX is the hex value to put there.
+ex. <D><A> is carriage return linefeed.
+
+Note: This is quite old and is no longer maintained.
